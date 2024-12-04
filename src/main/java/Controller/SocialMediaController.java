@@ -12,6 +12,7 @@ import Model.Account;
 import Model.Message;
 
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -42,6 +43,7 @@ public class SocialMediaController {
         app.get("/messages/{message_id}", this::getAllMessagesByIdHandler);
         app.delete("/messages/{message_id}", this::deleteMessageByIdHandler);
         app.patch("/messages/{message_id}", this::updateMessageByIdHandler);
+        app.get("/accounts/{account_id}/messages", this::getMessagesByAccountIdHandler);
         //app.start(8080);
         return app;
     }
@@ -50,14 +52,42 @@ public class SocialMediaController {
      * This is an example handler for an example endpoint.
      * @param context The Javalin Context object manages information about both the HTTP request and response.
      */
-    private void updateMessageByIdHandler(Context ctx){
-        int id = Integer.parseInt(ctx.pathParam("message_id"));
-        String revisedMessage = ctx.body();
-        Message message = messageService.updateMessageById(id, revisedMessage);
-        if (message == null){
-            ctx.status(400);
-        }else{
-            ctx.json(message);
+    private void getMessagesByAccountIdHandler(Context ctx){
+        int account_id = Integer.parseInt(ctx.pathParam("account_id"));
+
+        List<Message> messages = messageService.getMessagesByAccountId(account_id);
+        ctx.status(200).json(messages);
+    }
+
+    private void updateMessageByIdHandler(Context ctx) {
+        try {
+            // Parse the message ID from the path parameter
+            int messageId = Integer.parseInt(ctx.pathParam("message_id"));
+    
+            // Parse the request body as JSON to extract "message_text"
+            Map<String, String> requestBody = new ObjectMapper().readValue(ctx.body(), Map.class);
+            String newMessageText = requestBody.get("message_text");
+    
+            // Validate the "message_text" value
+            if (newMessageText == null || newMessageText.isBlank() || newMessageText.length() > 255) {
+                ctx.status(400).result(""); // Return 400 if the message_text is invalid
+                return;
+            }
+    
+            // Call the service to update the message
+            Message updatedMessage = messageService.updateMessageText(messageId, newMessageText);
+    
+            if (updatedMessage != null) {
+                // Return the updated message if successful
+                ctx.status(200).json(updatedMessage);
+            } else {
+                // Return 400 if the message ID does not exist
+                ctx.status(400).result("");
+            }
+        } catch (NumberFormatException e) {
+            ctx.status(400).result(""); // Invalid message ID format
+        } catch (Exception e) {
+            ctx.status(500).result("Internal Server Error");
         }
     }
 

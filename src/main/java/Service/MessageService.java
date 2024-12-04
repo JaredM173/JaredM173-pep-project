@@ -21,10 +21,16 @@ public class MessageService {
 
     public MessageService(MessageDAO messageDAO){
         this.messageDAO = messageDAO;
+
+
+    }
+    //get all messages by id
+    public List<Message> getMessagesByAccountId(int accountId){
+        return messageDAO.getMessagesByAccountId(accountId);
     }
     //update message by Id
-    public Message updateMessageById(int id, String revisedMessage){
-        return messageDAO.updateMessageById(id, revisedMessage);
+    public Message updateMessageText(int messageId, String newMessageText) {
+        return messageDAO.updateMessageText(messageId, newMessageText);
     }
     // delete message by Id
     public Message deletMessageById(int id){
