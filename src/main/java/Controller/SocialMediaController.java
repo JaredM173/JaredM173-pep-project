@@ -6,11 +6,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 
+import Service.MessageService;
 import Service.AccountService;
 import Model.Account;
-//import Model.Message;
+import Model.Message;
 
-//import java.util.List;
+import java.util.List;
+
 
 /**
  * TODO: You will need to write your own endpoints and handlers for your controller. The endpoints you will need can be
@@ -19,11 +21,12 @@ import Model.Account;
  */
 public class SocialMediaController {
     AccountService accountService;
-    // MessageService messageService;
+    MessageService messageService;
+    
 
     public SocialMediaController(){
         this.accountService = new AccountService();
-        // this.messageService = new MessageService();
+        this.messageService = new MessageService();
     }
     /**
      * In order for the test cases to work, you will need to write the endpoints in the startAPI() method, as the test
@@ -33,7 +36,11 @@ public class SocialMediaController {
     public Javalin startAPI() {
         Javalin app = Javalin.create();
         app.post("/register", this::NewAccHandler);
-        //app.get("/login", this::UserLogin);
+        app.post("/login", this::login);
+        app.post("/messages", this::NewMessageHandler);
+        app.get("/messages", this::getAllMessagesHandler);
+        app.get("/messages/{message_id}", this::getAllMessagesByIdHandler);
+        app.delete("/messages{message_id}", this::deleteMessagebyIdHandler);
         //app.start(8080);
         return app;
     }
@@ -42,6 +49,43 @@ public class SocialMediaController {
      * This is an example handler for an example endpoint.
      * @param context The Javalin Context object manages information about both the HTTP request and response.
      */
+    private void deleteMessagebyIdHandler(Context ctx){
+        int id = Integer.parseInt(ctx.pathParam("message_id"));
+        Message message = messageService.deletMessagebyId(id);
+        if (message==null){
+            ctx.status(200);
+        }else{
+            ctx.json(message);
+        }
+    }
+
+    private void getAllMessagesByIdHandler(Context ctx){
+        int id = Integer.parseInt(ctx.pathParam("message_id"));
+        Message message = messageService.getAllMessagesById(id);
+        if(message==null){
+            ctx.status(200);
+        }else{
+            ctx.json(message);
+        }
+        
+    }
+
+    private void getAllMessagesHandler(Context ctx){
+        List<Message> messages = messageService.getAllMessages();
+        ctx.json(messages);
+    }
+
+    private void NewMessageHandler(Context ctx)throws JsonProcessingException{
+        ObjectMapper mapper = new ObjectMapper();
+        Message message = mapper.readValue(ctx.body(), Message.class);
+        Message addedMessage = messageService.addMessage(message);
+        if(addedMessage!=null){
+            ctx.json(mapper.writeValueAsString(addedMessage));
+        }else{
+            ctx.status(400);
+        }
+    }
+
     private void NewAccHandler(Context ctx) throws JsonProcessingException { 
         ObjectMapper mapper = new ObjectMapper();
         Account account = mapper.readValue(ctx.body(), Account.class);
@@ -53,10 +97,16 @@ public class SocialMediaController {
         }
     }
 
-    //private void login(Context ctx){
-        //List<Account> accounts = AccountService.login();
-        //ctx.json(accounts);
-   // }
+    private void login(Context ctx)throws JsonProcessingException{
+        ObjectMapper mapper = new ObjectMapper();
+        Account account = mapper.readValue(ctx.body(), Account.class);
+        Account validUser = accountService.Login(account);
+        if(validUser!=null){
+            ctx.json(mapper.writeValueAsString(validUser));
+        }else{
+            ctx.status(401);
+        }
+    }
 
 
 }

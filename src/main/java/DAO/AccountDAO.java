@@ -4,8 +4,8 @@ import Model.Account;
 import Util.ConnectionUtil;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+//import java.util.ArrayList;
+//import java.util.List;
 
 public class AccountDAO {
     
@@ -29,6 +29,26 @@ public class AccountDAO {
         }
         return account;
     }
+    //getaccount by id
+    public Account getAccountByID(int id){
+        Connection connection = ConnectionUtil.getConnection();
+        
+        try{
+            String sql = "SELECT * FROM account WHERE account_id=?";
+            PreparedStatement PS = connection.prepareStatement(sql);
+
+            PS.setInt(1, id);
+            ResultSet rs = PS.executeQuery();
+            while(rs.next()){
+                Account account = new Account(rs.getInt("account_id"),
+                                rs.getString("username"), 
+                                rs.getString("password"));
+                            return account;
+        }}catch(SQLException e){
+            System.out.println(e.getMessage());
+        }
+        return null;
+    }
 
     // get account by account username
     public Account getAccountByUsername(String Username){
@@ -51,26 +71,49 @@ public class AccountDAO {
         return null;
 
     }
-    // valid login
-    public List<Account> login(String username, String password){
+    //get account based on password 
+    public Account getAccountByPassword(String Password){
         Connection connection = ConnectionUtil.getConnection();
-        List<Account> accounts = new ArrayList<>();
+        
         try{
-            String sql = "SELECT username, password FROM account WHERE username=? AND password=?; ";
+            String sql = "SELECT * FROM account WHERE password=?";
             PreparedStatement PS = connection.prepareStatement(sql);
 
-            PS.setString(1, username);
-            PS.setString(2, password);
+            PS.setString(1, Password);
+            ResultSet rs = PS.executeQuery();
+            while(rs.next()){
+                Account account = new Account(rs.getInt("account_id"),
+                                rs.getString("username"), 
+                                rs.getString("password"));
+                            return account;
+        }}catch(SQLException e){
+            System.out.println(e.getMessage());
+        }
+        return null;
+
+    }
+    // valid login
+    public Account login(Account account){
+        Connection connection = ConnectionUtil.getConnection();
+        //List<Account> accounts = new ArrayList<>();
+        try{
+            String sql = "SELECT * FROM account WHERE username=? AND password=?; ";
+            PreparedStatement PS = connection.prepareStatement(sql);
+
+            PS.setString(1, account.getUsername());
+            PS.setString(2, account.getPassword());
             ResultSet rs = PS.executeQuery();
             while (rs.next()){
-                Account account = new Account(rs.getString("username"),
-                                rs.getString("password"));
-                accounts.add(account);
+                Account account2 = new Account(rs.getInt("account_id"),
+                                    rs.getString("username"), 
+                    rs.getString("password"));
+                //accounts.add(account2);
+                return account2;
             }
         }catch(SQLException e){
             System.out.println(e.getMessage());
         }
-        return accounts;
+        return null;
 
     }
 }

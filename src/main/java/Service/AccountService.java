@@ -17,8 +17,11 @@ public class AccountService {
         this.accountDAO = accountDAO;
     }
     // login 
-    public List<Account> Login(String username, String password){
-        return accountDAO.login(username, password);
+    public Account Login(Account account){
+        if(accountDAO.getAccountByUsername(account.getUsername())== accountDAO.getAccountByPassword(account.getPassword())){
+            return null;
+        }
+        return accountDAO.login(account);
     }
     // using AccountDAO to persist an account 
     public Account addAccount(Account account){
