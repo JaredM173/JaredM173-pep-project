@@ -8,9 +8,49 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MessageDAO {
-    
+    //update message by id 
+    public Message updateMessageById(int id, String revisedMessage){
+        Connection connection = ConnectionUtil.getConnection();
+        Message updatedMessage = null; 
+
+    try {
+        // First, select the message to return it later
+        String selectSql = "SELECT * FROM message WHERE message_id = ?";
+        try (PreparedStatement selectPs = connection.prepareStatement(selectSql)) {
+            selectPs.setInt(1, id);
+            ResultSet rs = selectPs.executeQuery();
+
+            
+            if (rs.next()) {
+                updatedMessage = new Message(
+                    rs.getInt("message_id"),
+                    rs.getInt("posted_by"),
+                    rs.getString("message_text"),
+                    rs.getLong("time_posted_epoch")
+                );
+            }
+        } // End of first try-with-resources block for SELECT
+       
+        // If the message exists, update it
+        if (updatedMessage != null && updatedMessage.getMessage_text()!="" &&updatedMessage.getMessage_text().length()<=255) {
+            String updateSql = "UPDATE message SET message_text = ? WHERE message_id = ?";
+            try (PreparedStatement updatePs = connection.prepareStatement(updateSql)) {
+                updatePs.setString(1, revisedMessage);
+                updatePs.setInt(2, id);
+                int rowsUpdated = updatePs.executeUpdate();
+                
+            } // End of second try-with-resources block for Update
+        }
+
+    } catch (SQLException e) {
+        System.out.println(e.getMessage());
+    }
+
+    return updatedMessage; 
+        
+    }
     // delete message by id
-    public Message deleteMessagebyId(int id){
+    public Message deleteMessageById(int id){
         Connection connection = ConnectionUtil.getConnection();
         Message deletedMessage = null; 
 

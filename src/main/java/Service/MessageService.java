@@ -22,9 +22,13 @@ public class MessageService {
     public MessageService(MessageDAO messageDAO){
         this.messageDAO = messageDAO;
     }
+    //update message by Id
+    public Message updateMessageById(int id, String revisedMessage){
+        return messageDAO.updateMessageById(id, revisedMessage);
+    }
     // delete message by Id
-    public Message deletMessagebyId(int id){
-        return messageDAO.deleteMessagebyId(id);
+    public Message deletMessageById(int id){
+        return messageDAO.deleteMessageById(id);
     }
     // retrive messages from specific users
     public Message getAllMessagesById(int id){

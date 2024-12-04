@@ -40,7 +40,8 @@ public class SocialMediaController {
         app.post("/messages", this::NewMessageHandler);
         app.get("/messages", this::getAllMessagesHandler);
         app.get("/messages/{message_id}", this::getAllMessagesByIdHandler);
-        app.delete("/messages{message_id}", this::deleteMessagebyIdHandler);
+        app.delete("/messages/{message_id}", this::deleteMessageByIdHandler);
+        app.patch("/messages/{message_id}", this::updateMessageByIdHandler);
         //app.start(8080);
         return app;
     }
@@ -49,9 +50,20 @@ public class SocialMediaController {
      * This is an example handler for an example endpoint.
      * @param context The Javalin Context object manages information about both the HTTP request and response.
      */
-    private void deleteMessagebyIdHandler(Context ctx){
+    private void updateMessageByIdHandler(Context ctx){
         int id = Integer.parseInt(ctx.pathParam("message_id"));
-        Message message = messageService.deletMessagebyId(id);
+        String revisedMessage = ctx.body();
+        Message message = messageService.updateMessageById(id, revisedMessage);
+        if (message == null){
+            ctx.status(400);
+        }else{
+            ctx.json(message);
+        }
+    }
+
+    private void deleteMessageByIdHandler(Context ctx){
+        int id = Integer.parseInt(ctx.pathParam("message_id"));
+        Message message = messageService.deletMessageById(id);
         if (message==null){
             ctx.status(200);
         }else{
